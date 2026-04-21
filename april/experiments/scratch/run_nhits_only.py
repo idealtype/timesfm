@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 import torch
 
 PROJECT_ROOT = os.path.join(os.path.dirname(__file__), "..", "..", "..")
-APRIL_DIR = os.path.join(PROJECT_ROOT, "experiments", "april")
+APRIL_EXP_DIR = os.path.join(PROJECT_ROOT, "april", "experiments")
 sys.path.insert(0, PROJECT_ROOT)
-sys.path.insert(0, APRIL_DIR)
+sys.path.insert(0, APRIL_EXP_DIR)
 
 from _common.nhits_baseline import train_and_eval_nhits
 

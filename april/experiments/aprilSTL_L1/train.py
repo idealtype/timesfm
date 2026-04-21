@@ -1,4 +1,4 @@
-"""April L1: AvgPool 타겟 분해 + MAE loss."""
+"""April STL L1: STL 타겟 분해 + MAE loss."""
 
 import os
 import sys
@@ -12,9 +12,9 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 
 PROJECT_ROOT = os.path.join(os.path.dirname(__file__), "..", "..", "..")
-APRIL_DIR = os.path.join(PROJECT_ROOT, "experiments", "april")
+APRIL_EXP_DIR = os.path.join(PROJECT_ROOT, "april", "experiments")
 sys.path.insert(0, PROJECT_ROOT)
-sys.path.insert(0, APRIL_DIR)
+sys.path.insert(0, APRIL_EXP_DIR)
 
 from _common.eval_decomposition import (
     compute_decomposition_metrics,
@@ -22,23 +22,20 @@ from _common.eval_decomposition import (
     plot_decomposition_metrics,
 )
 from _common.nhits_baseline import train_and_eval_nhits
+
 from april.model.decomp_timesfm import DecompTimesFM
-from april.model.decoder_t import make_trend_target
-from april.model.decoder_s import make_seasonal_target
 from april.config import DEFAULT_CONFIG
 from timesfm.timesfm_2p5.timesfm_2p5_torch import TimesFM_2p5_200M_torch
 from timesfm.configs import ForecastConfig
 
 OUTPUT_DIR = os.path.dirname(os.path.abspath(__file__))
-EXPERIMENTS_DIR = os.path.join(PROJECT_ROOT, "experiments")  # for bench_cache/ (shared)
+EXPERIMENTS_DIR = os.path.join(PROJECT_ROOT, "experiments")
 
 TRAIN_BORDER = 8640
 VAL_BORDER = 8640 + 2880
 LOSS_FN = F.l1_loss
-LOSS_NAME = "L1"
-
-# AvgPool 타겟 생성용 커널
-TARGET_POOL_KERNELS = [8, 4, 1]
+LOSS_NAME = "STL_L1"
+STL_PERIOD = 24
 
 
 def get_config():
@@ -48,6 +45,7 @@ def get_config():
     parser.add_argument("--learning_rate", type=float, default=1e-3)
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--device", type=str, default="cuda:0")
+    parser.add_argument("--stl_period", type=int, default=24)
     parsed = parser.parse_args()
     cfg = dict(DEFAULT_CONFIG)
     cfg["horizon"] = parsed.horizon
@@ -56,29 +54,84 @@ def get_config():
     cfg["batch_size"] = parsed.batch_size
     cfg["device"] = parsed.device
     cfg["loss"] = LOSS_NAME
+    cfg["stl_period"] = parsed.stl_period
     return cfg
 
 
+# ---------------------------------------------------------------------------
+# Dataset with precomputed STL targets
+# ---------------------------------------------------------------------------
+
 class ETTDataset(Dataset):
-    def __init__(self, df, context_len, horizon, target_col="OT"):
+    def __init__(self, df, context_len, horizon, target_col="OT", stl_targets=None):
         self.context_len = context_len
         self.horizon = horizon
         self.target = df[target_col].values.astype(np.float32)
         self.n_samples = len(self.target) - context_len - horizon + 1
+        self.stl_targets = stl_targets
+
     def __len__(self):
         return max(0, self.n_samples)
+
     def __getitem__(self, idx):
         ctx_end = idx + self.context_len
         fut_end = ctx_end + self.horizon
-        return (torch.tensor(self.target[idx:ctx_end]),
-                torch.zeros(self.context_len, dtype=torch.bool),
-                torch.tensor(self.target[ctx_end:fut_end]))
+        context = torch.tensor(self.target[idx:ctx_end])
+        future = torch.tensor(self.target[ctx_end:fut_end])
+        masks = torch.zeros(self.context_len, dtype=torch.bool)
+        if self.stl_targets is not None:
+            return (context, masks, future,
+                    torch.tensor(self.stl_targets[0][idx]),
+                    torch.tensor(self.stl_targets[1][idx]),
+                    torch.tensor(self.stl_targets[2][idx]))
+        return context, masks, future
+
+
+def precompute_stl_targets(df, context_len, horizon, period=24, target_col="OT"):
+    from statsmodels.tsa.seasonal import STL
+
+    values = df[target_col].values.astype(np.float32)
+    n_samples = len(values) - context_len - horizon + 1
+    if n_samples <= 0:
+        return None
+
+    cache_dir = os.path.join(EXPERIMENTS_DIR, "bench_cache")
+    os.makedirs(cache_dir, exist_ok=True)
+    cache_path = os.path.join(cache_dir, f"stl_{n_samples}_c{context_len}_h{horizon}_p{period}.npz")
+
+    if os.path.exists(cache_path):
+        print(f"  STL 캐시 로드: {cache_path}")
+        data = np.load(cache_path)
+        return data["trend"], data["seasonal"], data["residual"]
+
+    trend_arr = np.zeros((n_samples, horizon), dtype=np.float32)
+    seasonal_arr = np.zeros((n_samples, horizon), dtype=np.float32)
+    residual_arr = np.zeros((n_samples, horizon), dtype=np.float32)
+
+    print(f"  STL 사전 계산 중... ({n_samples} 샘플, period={period})")
+    for i in range(n_samples):
+        full = values[i : i + context_len + horizon]
+        stl = STL(full, period=period, robust=True)
+        result = stl.fit()
+        trend_arr[i] = result.trend[-horizon:]
+        seasonal_arr[i] = result.seasonal[-horizon:]
+        residual_arr[i] = result.resid[-horizon:]
+        if (i + 1) % 2000 == 0:
+            print(f"    {i+1}/{n_samples}")
+
+    np.savez(cache_path, trend=trend_arr, seasonal=seasonal_arr, residual=residual_arr)
+    print(f"  STL 캐시 저장: {cache_path}")
+    return trend_arr, seasonal_arr, residual_arr
 
 
 def load_ett(name="ETTh1"):
     url = f"https://raw.githubusercontent.com/zhouhaoyi/ETDataset/main/ETT-small/{name}.csv"
     return pd.read_csv(url)
 
+
+# ---------------------------------------------------------------------------
+# Training
+# ---------------------------------------------------------------------------
 
 def train_stage(model, stage, train_loader, cfg, device):
     max_steps = cfg["max_steps_per_stage"]
@@ -94,30 +147,23 @@ def train_stage(model, stage, train_loader, cfg, device):
     losses = []
     step = 0
     while step < max_steps:
-        for context, masks, future in train_loader:
+        for batch in train_loader:
             if step >= max_steps: break
-            context, masks, future = context.to(device), masks.to(device), future.to(device)
+            context, masks, future, stl_t, stl_s, stl_r = batch
+            context, masks = context.to(device), masks.to(device)
+            stl_t, stl_s, stl_r = stl_t.to(device), stl_s.to(device), stl_r.to(device)
+
+            emb, mu, sigma = model._encode(context, masks)
+            stl_t_n = model._normalize_future(stl_t, mu, sigma)
+            stl_s_n = stl_s / (sigma + 1e-8)
+            stl_r_n = stl_r / (sigma + 1e-8)
 
             if stage == 1:
-                wave_t_n, mu, sigma = model.forward_stage1(context, masks)
-                future_n = model._normalize_future(future, mu, sigma)
-                target = make_trend_target(future_n, TARGET_POOL_KERNELS[0])
-                loss = LOSS_FN(wave_t_n, target)
+                loss = LOSS_FN(model.decoder_t(emb), stl_t_n)
             elif stage == 2:
-                wave_t_n, wave_s_n, mu, sigma = model.forward_stage2(context, masks)
-                future_n = model._normalize_future(future, mu, sigma)
-                r1_n = future_n - wave_t_n.detach()
-                target = make_seasonal_target(r1_n, TARGET_POOL_KERNELS[1])
-                loss = LOSS_FN(wave_s_n, target)
+                loss = LOSS_FN(model.decoder_s(emb), stl_s_n)
             elif stage == 3:
-                emb, mu, sigma = model._encode(context, masks)
-                future_n = model._normalize_future(future, mu, sigma)
-                with torch.no_grad():
-                    wt_n = model.decoder_t(emb)
-                    ws_n = model.decoder_s(emb)
-                    r2_n = future_n - wt_n - ws_n
-                residual_n = model.decoder_r(emb)
-                loss = LOSS_FN(residual_n, r2_n.detach())
+                loss = LOSS_FN(model.decoder_r(emb), stl_r_n)
 
             optimizer.zero_grad()
             loss.backward()
@@ -131,13 +177,17 @@ def train_stage(model, stage, train_loader, cfg, device):
     return losses
 
 
+# ---------------------------------------------------------------------------
+# Evaluation
+# ---------------------------------------------------------------------------
+
 @torch.no_grad()
 def evaluate(model, loader, device):
     model.eval()
     total_mse, total_mae, n = 0., 0., 0
     all_p, all_f, all_d = [], [], []
-    for ctx, msk, fut in loader:
-        ctx, msk, fut = ctx.to(device), msk.to(device), fut.to(device)
+    for batch in loader:
+        ctx, msk, fut = batch[0].to(device), batch[1].to(device), batch[2].to(device)
         pred, decomp = model(ctx, msk)
         total_mse += ((pred - fut)**2).sum().item()
         total_mae += (pred - fut).abs().sum().item()
@@ -160,7 +210,9 @@ def evaluate_baseline(bl, test_ds, horizon, context_len):
     return float(np.mean((preds-futs)**2)), float(np.mean(np.abs(preds-futs))), torch.tensor(preds, dtype=torch.float32)
 
 
-# --- Plots ---
+# ---------------------------------------------------------------------------
+# Plots
+# ---------------------------------------------------------------------------
 
 def plot_stage_losses(losses_list, horizon):
     fig, axes = plt.subplots(1, 3, figsize=(15, 4))
@@ -224,14 +276,20 @@ def plot_summary(results):
     plt.savefig(os.path.join(OUTPUT_DIR, "horizon_comparison.png"), dpi=150); plt.close()
 
 
-# --- Main ---
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
 
 def run_single_horizon(cfg, df, device, baseline_model):
     horizon = cfg["horizon"]; context_len = cfg["context_len"]; bs = cfg["batch_size"]
     print(f"\n{'='*60}\n  Horizon = {horizon}\n{'='*60}")
 
-    train_ds = ETTDataset(df.iloc[:TRAIN_BORDER], context_len, horizon)
-    test_ds = ETTDataset(df.iloc[VAL_BORDER:], context_len, horizon)
+    df_train = df.iloc[:TRAIN_BORDER]
+    df_test = df.iloc[VAL_BORDER:]
+
+    stl_targets = precompute_stl_targets(df_train, context_len, horizon, period=cfg["stl_period"])
+    train_ds = ETTDataset(df_train, context_len, horizon, stl_targets=stl_targets)
+    test_ds = ETTDataset(df_test, context_len, horizon)
     train_loader = DataLoader(train_ds, batch_size=bs, shuffle=True, num_workers=2)
     test_loader = DataLoader(test_ds, batch_size=bs, shuffle=False, num_workers=2)
     print(f"Train: {len(train_ds)}, Test: {len(test_ds)}")
@@ -271,7 +329,7 @@ def run_single_horizon(cfg, df, device, baseline_model):
     print(f"\n  ETTh1 Test (h={horizon}):")
     print(f"    TimesFM        | MSE: {bl_mse:.4f} | MAE: {bl_mae:.4f}")
     print(f"    N-HiTS         | MSE: {nhits_mse:.4f} | MAE: {nhits_mae:.4f}")
-    print(f"    April {LOSS_NAME}      | MSE: {test_mse:.4f} | MAE: {test_mae:.4f}")
+    print(f"    April {LOSS_NAME}  | MSE: {test_mse:.4f} | MAE: {test_mae:.4f}")
 
     plot_decomposition(test_futures, horizon, test_preds, test_decomps, nhits_preds, nhits_decomps)
     plot_comparison(test_futures, bl_preds, test_preds, nhits_preds, horizon)
@@ -325,7 +383,7 @@ def main():
     with open(os.path.join(OUTPUT_DIR, "results.json"), "w") as f: json.dump(results, f, indent=2)
     plot_summary(results)
     from bench_utils import update_benchmark
-    update_benchmark("April L1", results, steps_per_stage=cfg["max_steps_per_stage"])
+    update_benchmark("April STL_L1", results, steps_per_stage=cfg["max_steps_per_stage"])
 
 if __name__ == "__main__":
     main()

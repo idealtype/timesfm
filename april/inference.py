@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from model.decomp_timesfm import DecompTimesFM
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_DIR = os.path.join(SCRIPT_DIR, "..", "experiments", "april")
+OUTPUT_DIR = os.path.join(SCRIPT_DIR, "experiments")
 
 
 def load_model(checkpoint_path, device):
