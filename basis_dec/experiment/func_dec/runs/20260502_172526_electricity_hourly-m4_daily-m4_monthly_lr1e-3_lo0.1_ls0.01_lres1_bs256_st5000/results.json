@@ -1,0 +1,58 @@
+[
+  {
+    "horizon": 96,
+    "funcdec_val_mse": 355.99204884134707,
+    "funcdec_val_mae": 1.875131115219161,
+    "tfm_rdh_val_mse": 356.25805622246577,
+    "tfm_rdh_val_mae": 1.9127750157922379,
+    "num_train": 214897,
+    "num_val": 53726,
+    "datasets_used": [
+      "electricity_hourly_dataset",
+      "m4_daily_dataset",
+      "m4_monthly_dataset"
+    ]
+  },
+  {
+    "horizon": 192,
+    "funcdec_val_mse": 199.2998630575956,
+    "funcdec_val_mae": 1.6355367880637814,
+    "tfm_rdh_val_mse": 198.2042723101178,
+    "tfm_rdh_val_mae": 1.8089782391354656,
+    "num_train": 114710,
+    "num_val": 28679,
+    "datasets_used": [
+      "electricity_hourly_dataset",
+      "m4_daily_dataset",
+      "m4_monthly_dataset"
+    ]
+  },
+  {
+    "horizon": 336,
+    "funcdec_val_mse": 10.632607148409441,
+    "funcdec_val_mae": 1.0911206805285252,
+    "tfm_rdh_val_mse": 11.180947066996927,
+    "tfm_rdh_val_mae": 1.14618050541691,
+    "num_train": 94134,
+    "num_val": 23535,
+    "datasets_used": [
+      "electricity_hourly_dataset",
+      "m4_daily_dataset",
+      "m4_monthly_dataset"
+    ]
+  },
+  {
+    "horizon": 720,
+    "funcdec_val_mse": 7.957598827242992,
+    "funcdec_val_mae": 1.140026574981409,
+    "tfm_rdh_val_mse": 8.06258724156063,
+    "tfm_rdh_val_mae": 1.1801017137076708,
+    "num_train": 78135,
+    "num_val": 19536,
+    "datasets_used": [
+      "electricity_hourly_dataset",
+      "m4_daily_dataset",
+      "m4_monthly_dataset"
+    ]
+  }
+]

@@ -1,0 +1,48 @@
+============================================================
+  April Benchmark Results — ETTh1 (chronological 60/20/20)
+  Last updated: 2026-04-26 16:42
+============================================================
+
+  h=96
+    TimesFM (AR)        | MSE:   0.2893 | MAE: 0.2618 | steps: zero-shot
+    N-HiTS              | MSE:      nan | MAE: nan | steps: 9000
+    April L1            | MSE:   7.0080 | MAE: 2.0582 | steps: 2000x3
+    April-Raw           | MSE:   6.8276 | MAE: 2.0240 | steps: 2000x3
+    April Cov_L1        | MSE:   5.8804 | MAE: 1.8921 | steps: 2000x3
+    April Cov_Raw       | MSE:   5.8867 | MAE: 1.8845 | steps: 2000x3
+    April STL_L1        | MSE:   6.8848 | MAE: 2.0347 | steps: 2000x3
+    April-TS-Only       | MSE:   6.9273 | MAE: 2.0373 | steps: 2000x3
+    aprilProphet L1 Electricity| MSE:  10.8365 | MAE: 1.3254 | steps: 3000x3
+
+  h=192
+    TimesFM (AR)        | MSE:   0.4042 | MAE: 0.2943 | steps: zero-shot
+    N-HiTS              | MSE:      nan | MAE: nan | steps: 6000
+    April L1            | MSE:   8.0385 | MAE: 2.2331 | steps: 2000x3
+    April-Raw           | MSE:   8.0129 | MAE: 2.2268 | steps: 2000x3
+    April Cov_L1        | MSE:   6.5355 | MAE: 2.0299 | steps: 2000x3
+    April Cov_Raw       | MSE:   6.4403 | MAE: 2.0021 | steps: 2000x3
+    April STL_L1        | MSE:   7.8900 | MAE: 2.2117 | steps: 2000x3
+    April-TS-Only       | MSE:   8.1683 | MAE: 2.2522 | steps: 2000x3
+    aprilProphet L1 Electricity| MSE:   9.0159 | MAE: 1.2305 | steps: 3000x3
+
+  h=336
+    TimesFM (AR)        | MSE:   0.5174 | MAE: 0.3225 | steps: zero-shot
+    N-HiTS              | MSE:      nan | MAE: nan | steps: 6000
+    April L1            | MSE:   8.6743 | MAE: 2.3399 | steps: 2000x3
+    April-Raw           | MSE:   8.5939 | MAE: 2.3308 | steps: 2000x3
+    April Cov_L1        | MSE:   7.9610 | MAE: 2.2262 | steps: 2000x3
+    April Cov_Raw       | MSE:   7.0773 | MAE: 2.1280 | steps: 2000x3
+    April STL_L1        | MSE:   8.4503 | MAE: 2.3129 | steps: 2000x3
+    April-TS-Only       | MSE:   8.7044 | MAE: 2.3420 | steps: 2000x3
+    aprilProphet L1 Electricity| MSE:   6.8668 | MAE: 1.2384 | steps: 3000x3
+
+  h=720
+    TimesFM (AR)        | MSE:   0.7727 | MAE: 0.3835 | steps: zero-shot
+    N-HiTS              | MSE:      nan | MAE: nan | steps: 6000
+    April L1            | MSE:  10.8695 | MAE: 2.5818 | steps: 2000x3
+    April-Raw           | MSE:  10.8738 | MAE: 2.5838 | steps: 2000x3
+    April Cov_L1        | MSE:  10.9928 | MAE: 2.6076 | steps: 2000x3
+    April Cov_Raw       | MSE:  10.2917 | MAE: 2.5550 | steps: 2000x3
+    April STL_L1        | MSE:  10.7731 | MAE: 2.5740 | steps: 2000x3
+    April-TS-Only       | MSE:  11.1560 | MAE: 2.6101 | steps: 2000x3
+    aprilProphet L1 Electricity| MSE:  13.0107 | MAE: 1.4770 | steps: 3000x3

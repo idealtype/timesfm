@@ -1,0 +1,9 @@
+{
+  "trend_var_share_components": 0.06721856729128158,
+  "seasonal_var_share_components": 0.8915488638131824,
+  "residual_var_share_components": 0.0412325688944374,
+  "residual_var_share_pred": 0.040752035065582455,
+  "pred_var_share_future": 0.3168384731893625,
+  "mean_abs_component_corr": 0.04264478012919426,
+  "residual_to_signal_mse": 2.039731025695801
+}

@@ -1,0 +1,8 @@
+========================================================================
+  FuncDec Benchmark  |  2026-05-02 18:10
+  steps=5000  loss=MAE
+========================================================================
+  h=96:  FuncDec MSE=0.3040 MAE=0.2980 | TFM_RDH MSE=0.3030 MAE=0.2957 | TFM_ZS MSE=0.2830 MAE=0.2718
+  h=192:  FuncDec MSE=1.2245 MAE=0.3251 | TFM_RDH MSE=1.2204 MAE=0.3200 | TFM_ZS MSE=1.2036 MAE=0.2956
+  h=336:  FuncDec MSE=2.0681 MAE=0.3584 | TFM_RDH MSE=2.0716 MAE=0.3558 | TFM_ZS MSE=2.0452 MAE=0.3286
+  h=720:  FuncDec MSE=4.7623 MAE=0.4234 | TFM_RDH MSE=4.7661 MAE=0.4225 | TFM_ZS MSE=4.7418 MAE=0.3958

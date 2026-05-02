@@ -1,0 +1,26 @@
+# Large data files
+*.tsf
+
+# PyTorch binary files (caches, checkpoints)
+*.pt
+
+# Images
+*.png
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Reference folder (참고용)
+ref/
+
+# Claude internal settings
+.claude/
+
+# Detailed per-step loss JSON (not key results)
+**/results/training_losses_h*.json
+**/results/tfm_rdh_losses_h*.json
+
+# Misc
+.DS_Store

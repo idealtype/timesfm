@@ -1,0 +1,55 @@
+{
+  "context_len": 512,
+  "embed_dim": 1280,
+  "horizons": [
+    96,
+    192,
+    336,
+    720
+  ],
+  "n_knots": {
+    "96": 10,
+    "192": 15,
+    "336": 22,
+    "720": 40
+  },
+  "n_fourier_terms": {
+    "daily": 6,
+    "weekly": 4,
+    "yearly": 8
+  },
+  "mlp_units": {
+    "trend": [
+      512,
+      512
+    ],
+    "seasonal": [
+      512,
+      512
+    ],
+    "residual": [
+      512,
+      512
+    ]
+  },
+  "activation": "ReLU",
+  "dropout": 0.0,
+  "learning_rate": 0.001,
+  "max_steps": 5000,
+  "batch_size": 256,
+  "val_split": 0.2,
+  "lambda_orth": 0.1,
+  "lambda_sparse": 0.01,
+  "lambda_res": 1.0,
+  "loss": "MAE",
+  "device": "cuda:0",
+  "monash_cache_root": "/home/sia2/project/4.22prophet/timesfm/prophet_ans/data/monash/cache",
+  "dataset_cache_dir": "/home/sia2/project/4.28basis/basis_dec/experiment/func_dec/dataset_cache",
+  "datasets": [
+    "electricity_hourly_dataset"
+  ],
+  "eval_tfm_zeroshot": true,
+  "run_dir": "/home/sia2/project/4.28basis/basis_dec/experiment/func_dec/runs/20260502_180532_electricity_hourly_lr1e-3_lo0.1_ls0.01_lres1_mae_bs256_st5000",
+  "ckpt_dir": "/home/sia2/project/4.28basis/basis_dec/experiment/func_dec/runs/20260502_180532_electricity_hourly_lr1e-3_lo0.1_ls0.01_lres1_mae_bs256_st5000/checkpoints",
+  "results_dir": "/home/sia2/project/4.28basis/basis_dec/experiment/func_dec/runs/20260502_180532_electricity_hourly_lr1e-3_lo0.1_ls0.01_lres1_mae_bs256_st5000/results"
+}

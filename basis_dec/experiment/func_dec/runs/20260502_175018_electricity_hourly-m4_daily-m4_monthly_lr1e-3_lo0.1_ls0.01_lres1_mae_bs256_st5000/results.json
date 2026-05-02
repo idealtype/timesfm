@@ -1,0 +1,102 @@
+[
+  {
+    "horizon": 96,
+    "funcdec_val_mse": 357.3638658246057,
+    "funcdec_val_mae": 1.8153903591351643,
+    "tfm_rdh_val_mse": 357.2340589306828,
+    "tfm_rdh_val_mae": 1.8105120343917855,
+    "tfm_zeroshot_val_mse": 359.87357773279246,
+    "tfm_zeroshot_val_mae": 1.96959647512943,
+    "decomposition_metrics": {
+      "trend_var_share_components": 0.8743372366623675,
+      "seasonal_var_share_components": 0.08521025219396831,
+      "residual_var_share_components": 0.0404525111433758,
+      "residual_var_share_pred": 0.03350264722464443,
+      "pred_var_share_future": 0.01160347290105238,
+      "mean_abs_component_corr": 0.07736769318580627,
+      "residual_to_signal_mse": 357.36383056640625
+    },
+    "num_train": 214897,
+    "num_val": 53726,
+    "datasets_used": [
+      "electricity_hourly_dataset",
+      "m4_daily_dataset",
+      "m4_monthly_dataset"
+    ]
+  },
+  {
+    "horizon": 192,
+    "funcdec_val_mse": 197.3119046657625,
+    "funcdec_val_mae": 1.496126387282983,
+    "tfm_rdh_val_mse": 195.90160625551803,
+    "tfm_rdh_val_mae": 1.4751741555683233,
+    "tfm_zeroshot_val_mse": 197.51700911333532,
+    "tfm_zeroshot_val_mae": 1.5221892728568003,
+    "decomposition_metrics": {
+      "trend_var_share_components": 0.8599860162928076,
+      "seasonal_var_share_components": 0.08221721095490565,
+      "residual_var_share_components": 0.05779677275215498,
+      "residual_var_share_pred": 0.046994541674669495,
+      "pred_var_share_future": 0.04687437499243765,
+      "mean_abs_component_corr": 0.10045579075813293,
+      "residual_to_signal_mse": 197.31190490722656
+    },
+    "num_train": 114710,
+    "num_val": 28679,
+    "datasets_used": [
+      "electricity_hourly_dataset",
+      "m4_daily_dataset",
+      "m4_monthly_dataset"
+    ]
+  },
+  {
+    "horizon": 336,
+    "funcdec_val_mse": 9.902908049957613,
+    "funcdec_val_mae": 1.0273931891743047,
+    "tfm_rdh_val_mse": 9.51915619613677,
+    "tfm_rdh_val_mae": 1.0247283950057444,
+    "tfm_zeroshot_val_mse": 8.20646728878698,
+    "tfm_zeroshot_val_mae": 1.0073659220314621,
+    "decomposition_metrics": {
+      "trend_var_share_components": 0.817685103276027,
+      "seasonal_var_share_components": 0.12488301117206041,
+      "residual_var_share_components": 0.05743188555165908,
+      "residual_var_share_pred": 0.04896410638672722,
+      "pred_var_share_future": 0.47256008099263386,
+      "mean_abs_component_corr": 0.10614576935768127,
+      "residual_to_signal_mse": 9.902907371520996
+    },
+    "num_train": 94134,
+    "num_val": 23535,
+    "datasets_used": [
+      "electricity_hourly_dataset",
+      "m4_daily_dataset",
+      "m4_monthly_dataset"
+    ]
+  },
+  {
+    "horizon": 720,
+    "funcdec_val_mse": 7.7950086211255645,
+    "funcdec_val_mae": 1.0722486727339022,
+    "tfm_rdh_val_mse": 7.6144424101058625,
+    "tfm_rdh_val_mae": 1.0776419824698633,
+    "tfm_zeroshot_val_mse": 7.2707516924592275,
+    "tfm_zeroshot_val_mae": 1.0153220342368292,
+    "decomposition_metrics": {
+      "trend_var_share_components": 0.601887659870091,
+      "seasonal_var_share_components": 0.21554944234534712,
+      "residual_var_share_components": 0.18256289778415313,
+      "residual_var_share_pred": 0.15286712154254797,
+      "pred_var_share_future": 0.3511198781014111,
+      "mean_abs_component_corr": 0.10798441618680954,
+      "residual_to_signal_mse": 7.795008659362793
+    },
+    "num_train": 78135,
+    "num_val": 19536,
+    "datasets_used": [
+      "electricity_hourly_dataset",
+      "m4_daily_dataset",
+      "m4_monthly_dataset"
+    ]
+  }
+]
